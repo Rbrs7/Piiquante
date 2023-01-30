@@ -85,3 +85,18 @@ exports.getAllSauces = (req, res, next) => {
     .then((sauces) => res.status(200).json(sauces))
     .catch((error) => res.status(400).json({ error }));
 };
+
+exports.likeSauce = (req, res, next) => {
+  console.log("Controller 'like' ok");
+  console.log(req.body, req.params, { _id: req.params.id });
+  Sauce.findOne({ _id: req.params.id })
+    .then((sauces) => {
+      res.status(200).json(sauces);
+    })
+    .catch((error) => res.status(404).json({ error }));
+  //likes = 1 (+1)
+
+  //likes = 0 (pas de vote)
+
+  //likes = -1 (dislikes)
+};
