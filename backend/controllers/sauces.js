@@ -90,13 +90,66 @@ exports.likeSauce = (req, res, next) => {
   console.log("Controller 'like' ok");
   console.log(req.body, req.params, { _id: req.params.id });
   Sauce.findOne({ _id: req.params.id })
-    .then((sauces) => {
-      res.status(200).json(sauces);
+    .then((sauce) => {
+      //likes = 1 (+1)
+      console.log("promise", sauce);
+      // si userliked false && si like === 1
+      if (!sauce.usersLiked.includes(req.body.userId) && req.body.like === 1) {
+        console.log("instruction :", req.body.userId);
+        Sauce.updateOne(
+          { _id: req.params.id },
+          {
+            $inc: { likes: 1 },
+            $push: { usersLiked: req.body.userId },
+          }
+        )
+          .then(() => res.status(201).json({ message: "like +1" }))
+          .catch((error) => res.status(400).json({ error }));
+      }
+      if (sauce.usersLiked.includes(req.body.userId) && req.body.like === 0) {
+        console.log("instructions :", req.body.userId);
+        Sauce.updateOne(
+          { _id: req.params.id },
+          {
+            $inc: { likes: -1 },
+            $pull: { usersLiked: req.body.userId },
+          }
+        )
+          .then(() => res.status(201).json({ message: "like -1" }))
+          .catch((error) => res.status(400).json({ error }));
+      }
+
+      if (
+        !sauce.usersDisliked.includes(req.body.userId) &&
+        req.body.like === -1
+      ) {
+        console.log("UserId est dans [usersDisliked] et dislikes = 1");
+        Sauce.updateOne(
+          { _id: req.params.id },
+          {
+            $inc: { dislikes: 1 },
+            $push: { usersDisliked: req.body.userId },
+          }
+        )
+          .then(() => res.status(201).json({ message: "dislike +1" }))
+          .catch((error) => res.status(400).json({ error }));
+      }
+
+      if (
+        sauce.usersDisliked.includes(req.body.userId) &&
+        req.body.like === 0
+      ) {
+        console.log("UserId est dans [usersDisliked] et dislikes = 0");
+        Sauce.updateOne(
+          { _id: req.params.id },
+          {
+            $inc: { dislikes: -1 },
+            $pull: { usersDisliked: req.body.userId },
+          }
+        )
+          .then(() => res.status(201).json({ message: "dislike -1" }))
+          .catch((error) => res.status(400).json({ error }));
+      }
     })
     .catch((error) => res.status(404).json({ error }));
-  //likes = 1 (+1)
-
-  //likes = 0 (pas de vote)
-
-  //likes = -1 (dislikes)
 };
